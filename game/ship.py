@@ -8,6 +8,10 @@ class Ship:
         self.color = (80, 160, 240)
         self.trail = []
 
+    def fire(self):
+        from game.laser import Laser
+        return Laser(self.rect.centerx, self.rect.top)
+
     def move(self, keys, width, height):
         dx=dy=0
         if keys[pygame.K_LEFT] or keys[pygame.K_a]: dx=-SPEED

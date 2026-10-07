@@ -21,6 +21,7 @@ class GameEngine:
     def reset(self):
         self.ship=Ship(WIDTH//2,HEIGHT-80)
         self.meteors=[]
+        self.lasers=[]
         self.timer=0
         self.spawn_interval=60
         self.score=0
@@ -33,13 +34,17 @@ class GameEngine:
             if event.type==pygame.KEYDOWN:
                 if event.key==pygame.K_SPACE:
                     if self.game_over: self.reset()
-                    else: self.started=True
+                    elif not self.started: self.started=True
+                    else: self.lasers.append(self.ship.fire())
         return True
 
     def update(self):
         if self.game_over or not self.started: return
         keys=pygame.key.get_pressed()
         self.ship.move(keys,WIDTH,HEIGHT)
+        for l in self.lasers:
+            l.update()
+        self.lasers=[l for l in self.lasers if not l.off_screen()]
         self.timer+=1
         if self.timer>=self.spawn_interval:
             self.meteors.append(Meteor(WIDTH))
@@ -49,6 +54,14 @@ class GameEngine:
             m.update()
             if m.collides(self.ship.rect):
                 self.game_over=True
+        for l in list(self.lasers):
+            for m in list(self.meteors):
+                if l.collides(m):
+                    if m in self.meteors:
+                        self.meteors.remove(m)
+                    if l in self.lasers:
+                        self.lasers.remove(l)
+                    break
         self.meteors=[m for m in self.meteors if not m.off_screen(HEIGHT)]
         self.score+=1
 
@@ -57,6 +70,7 @@ class GameEngine:
         for sx,sy,sr in self.stars:
             pygame.draw.circle(self.screen,(200,200,220),(sx,sy),sr)
         for m in self.meteors: m.draw(self.screen)
+        for l in self.lasers: l.draw(self.screen)
         self.ship.draw(self.screen)
         sc=self.font.render(f"Time: {self.score//60}s",True,(200,200,240))
         self.screen.blit(sc,(10,10))
