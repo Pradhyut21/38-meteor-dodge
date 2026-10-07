@@ -82,7 +82,9 @@ meteor-dodge/
 │   ├── __init__.py
 │   ├── game_engine.py
 │   ├── ship.py
-│   └── meteor.py
+│   ├── meteor.py
+│   ├── laser.py
+│   └── shield_orb.py
 └── README.md
 ```
 
