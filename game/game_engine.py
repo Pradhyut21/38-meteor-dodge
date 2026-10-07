@@ -58,7 +58,9 @@ class GameEngine:
             for m in list(self.meteors):
                 if l.collides(m):
                     if m in self.meteors:
+                        fragments = m.split()
                         self.meteors.remove(m)
+                        self.meteors.extend(fragments)
                     if l in self.lasers:
                         self.lasers.remove(l)
                     break
