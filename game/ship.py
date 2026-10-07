@@ -7,6 +7,8 @@ class Ship:
         self.rect = pygame.Rect(x-20, y-20, 40, 40)
         self.color = (80, 160, 240)
         self.trail = []
+        self.has_shield = False
+        self.shield_anim = 0
 
     def fire(self):
         from game.laser import Laser
@@ -22,6 +24,8 @@ class Ship:
         self.rect.y=max(0,min(height-self.rect.height,self.rect.y+dy))
         self.trail.append(tuple(self.rect.center))
         if len(self.trail)>10: self.trail.pop(0)
+        if self.has_shield:
+            self.shield_anim = (self.shield_anim + 0.1) % 360
 
     def draw(self, screen):
         for i,pos in enumerate(self.trail):
@@ -36,3 +40,13 @@ class Ship:
         pygame.draw.polygon(screen,self.color,pts)
         # engine glow
         pygame.draw.circle(screen,(255,180,60),(cx,cy+12),5)
+
+        # energy shield barrier
+        if self.has_shield:
+            import math
+            pulse = int(2 * math.sin(self.shield_anim))
+            shield_r = 28 + pulse
+            s = pygame.Surface((shield_r*2+4, shield_r*2+4), pygame.SRCALPHA)
+            pygame.draw.circle(s, (80, 220, 255, 65), (shield_r+2, shield_r+2), shield_r)
+            pygame.draw.circle(s, (180, 240, 255, 200), (shield_r+2, shield_r+2), shield_r, width=2)
+            screen.blit(s, (cx - shield_r - 2, cy - shield_r - 2))

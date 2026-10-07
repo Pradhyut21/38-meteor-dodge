@@ -2,6 +2,7 @@ import pygame
 import random
 from game.ship import Ship
 from game.meteor import Meteor
+from game.shield_orb import ShieldOrb
 
 WIDTH,HEIGHT=700,520
 FPS=60
@@ -22,7 +23,9 @@ class GameEngine:
         self.ship=Ship(WIDTH//2,HEIGHT-80)
         self.meteors=[]
         self.lasers=[]
+        self.shield_orbs=[]
         self.timer=0
+        self.shield_timer=0
         self.spawn_interval=60
         self.score=0
         self.game_over=False
@@ -50,10 +53,26 @@ class GameEngine:
             self.meteors.append(Meteor(WIDTH))
             self.timer=0
             self.spawn_interval=max(20,self.spawn_interval-0.3)
-        for m in self.meteors:
+        self.shield_timer+=1
+        if self.shield_timer>=450:
+            self.shield_orbs.append(ShieldOrb(WIDTH))
+            self.shield_timer=0
+        for orb in self.shield_orbs:
+            orb.update()
+        self.shield_orbs=[o for o in self.shield_orbs if not o.off_screen(HEIGHT)]
+        for orb in list(self.shield_orbs):
+            if orb.collides(self.ship.rect):
+                self.ship.has_shield=True
+                self.shield_orbs.remove(orb)
+        for m in list(self.meteors):
             m.update()
             if m.collides(self.ship.rect):
-                self.game_over=True
+                if self.ship.has_shield:
+                    self.ship.has_shield=False
+                    if m in self.meteors:
+                        self.meteors.remove(m)
+                else:
+                    self.game_over=True
         for l in list(self.lasers):
             for m in list(self.meteors):
                 if l.collides(m):
@@ -71,6 +90,7 @@ class GameEngine:
         self.screen.fill(BG)
         for sx,sy,sr in self.stars:
             pygame.draw.circle(self.screen,(200,200,220),(sx,sy),sr)
+        for orb in self.shield_orbs: orb.draw(self.screen)
         for m in self.meteors: m.draw(self.screen)
         for l in self.lasers: l.draw(self.screen)
         self.ship.draw(self.screen)
